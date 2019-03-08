@@ -93,7 +93,7 @@ def mk_get_config(os_path, openf, argv, Project):
     def get_config():
         [config_fn, pid] = argv[1:3]
 
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config_fp = openf(config_fn)
         config.readfp(config_fp, filename=config_fn)
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     def _trusted_main():
         from sys import argv
         from os import path as os_path
-        import open as openf
+        from __builtin__ import open as openf
         from redcap import Project
 
         get_config = mk_get_config(os_path, openf, argv, Project)
