@@ -137,5 +137,4 @@ if __name__ == '__main__':
         main(get_config)
 
     _set_logging()
-
     _trusted_main()
