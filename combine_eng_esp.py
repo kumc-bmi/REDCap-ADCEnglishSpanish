@@ -1,5 +1,3 @@
-
-
 def get_files_to_export(export_dir):
     files = []
     for f in export_dir.iterdir():
@@ -8,34 +6,41 @@ def get_files_to_export(export_dir):
     return files
 
 
-def classify_files(eng_files, esp_files):
-    comb_file_list = {}
+def handle_files(eng_files, esp_files, export_dir):
+    from shutil import copy
+    from os.path import isfile
+    comb_files = {}
 
-    # 1 = has pair, 2 = no pair
+    print "Combining Files"
     for f in eng_files:
         for efile in esp_files:
             if f.name == efile.name:
-                comb_file_list[f] = 1
-                eng_files.remove(f)
-                esp_files.remove(efile)
+                combine_files(f, efile)
+                comb_files[str(f)] = str(f)
 
+    print "Moving English Files"
     for f in eng_files:
-        comb_file_list[f] = 2
+        if not isfile("{}/{}".format(str(export_dir.parent), f.name)):
+            copy(str(f), str(export_dir.parent))
 
+    print "Moving Spanish Files"
     for f in esp_files:
-        comb_file_list[f] = 3
-
-    return comb_file_list
+        if not isfile("{}/{}".format(str(export_dir.parent), f.name)):
+            copy(str(f), str(export_dir.parent))
 
 
 def combine_files(eng_file, esp_file):
     import pandas as pd
     export_location = r'{}'.format(eng_file.parent.parent.parent)
-    export_filename = 'No_merged_{}'.format(eng_file.name)
     eng = pd.read_csv(eng_file, low_memory=False)
     esp = pd.read_csv(esp_file, low_memory=False)
     merged = eng.append(esp, sort=True)
-    merged.to_csv('{}/{}'.format(export_location, export_filename))
+    merged_filename = '{}/{}'.format(export_location, eng_file.name)
+    merged = merged[merged.columns]
+    spanish_cols = set(merged.columns.tolist()) - set(eng.columns.tolist())
+    merged = merged[eng.columns.tolist() + list(spanish_cols)]
+    merged.to_csv(merged_filename, index=False)
+
 
 def handle_file_list(comb_file_list, export_dir):
     from shutil import copy
@@ -44,10 +49,7 @@ def handle_file_list(comb_file_list, export_dir):
             eng_file = f
             esp_file = export_dir / 'Spanish' / f.name
             combine_files(eng_file, esp_file)
-        elif comb_file_list[f] == 2:
-            copy(str(f), str(export_dir.parent))
-        elif comb_file_list[f] == 3:
-            pass
+        else:
             copy(str(f), str(export_dir.parent))
 
 
@@ -58,8 +60,7 @@ def main(argv, cwd):
     eng_files = get_files_to_export(eng_dir)
     esp_files = get_files_to_export(esp_dir)
 
-    comb_file_list = classify_files(eng_files, esp_files)
-    handle_file_list(comb_file_list, export_dir)
+    handle_files(eng_files, esp_files, export_dir)
 
 
 if __name__ == "__main__":
