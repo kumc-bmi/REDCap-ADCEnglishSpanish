@@ -1,3 +1,6 @@
+#   Copyright (c) 2019 University of Kansas Medical Center
+
+
 def get_files_to_export(export_dir):
     files = []
     for f in export_dir.iterdir():
@@ -40,17 +43,6 @@ def combine_files(eng_file, esp_file):
     spanish_cols = set(merged.columns.tolist()) - set(eng.columns.tolist())
     merged = merged[eng.columns.tolist() + list(spanish_cols)]
     merged.to_csv(merged_filename, index=False)
-
-
-def handle_file_list(comb_file_list, export_dir):
-    from shutil import copy
-    for f in comb_file_list:
-        if comb_file_list[f] == 1:
-            eng_file = f
-            esp_file = export_dir / 'Spanish' / f.name
-            combine_files(eng_file, esp_file)
-        else:
-            copy(str(f), str(export_dir.parent))
 
 
 def main(argv, cwd):
