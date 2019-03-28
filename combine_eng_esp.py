@@ -1,3 +1,14 @@
+'''combine_eng_esp -- this file combines english csv and spanish csv export.
+Usage::
+  $ python capture_query.py QUERY_NAME 'query description'
+  $ python combine_eng_esp.py export/
+export/temp/English will have English ADC export
+export/temp/Spanish will have Spanish ADC export
+:copyright: Copyright 2010-2019 University of Kansas Medical Center
+__ https://informatics.kumc.edu/work/wiki/REDCap
+'''
+import pandas as pd
+
 def get_files_to_export(export_dir):
     files = []
     for f in export_dir.iterdir():
@@ -30,7 +41,21 @@ def handle_files(eng_files, esp_files, export_dir):
 
 
 def combine_files(eng_file, esp_file):
-    import pandas as pd
+
+    '''
+    >>> from pathlib import Path
+    >>> from hashlib import md5
+
+    >>> eng_path = Path("testcases/eng/test.csv")
+    >>> esp_path = Path("testcases/esp/test.csv")
+
+    >>> combine_files(eng_path, esp_path)
+
+    >>> output_path = Path ("test.csv")
+    >>> md5(output_path.open().read()).hexdigest()
+    'bf4eebe4f4f1bae86e39a987f99f15fa'
+    '''
+
     export_location = r'{}'.format(eng_file.parent.parent.parent)
     eng = pd.read_csv(eng_file, low_memory=False)
     esp = pd.read_csv(esp_file, low_memory=False)
@@ -40,17 +65,6 @@ def combine_files(eng_file, esp_file):
     spanish_cols = set(merged.columns.tolist()) - set(eng.columns.tolist())
     merged = merged[eng.columns.tolist() + list(spanish_cols)]
     merged.to_csv(merged_filename, index=False)
-
-
-def handle_file_list(comb_file_list, export_dir):
-    from shutil import copy
-    for f in comb_file_list:
-        if comb_file_list[f] == 1:
-            eng_file = f
-            esp_file = export_dir / 'Spanish' / f.name
-            combine_files(eng_file, esp_file)
-        else:
-            copy(str(f), str(export_dir.parent))
 
 
 def main(argv, cwd):
