@@ -1,4 +1,13 @@
-#   Copyright (c) 2019 University of Kansas Medical Center
+'''combine_eng_esp -- this file combines english csv and spanish csv export.
+Usage::
+  $ python capture_query.py QUERY_NAME 'query description'
+  $ python combine_eng_esp.py export/
+export/temp/English will have English ADC export
+export/temp/Spanish will have Spanish ADC export
+:copyright: Copyright 2010-2019 University of Kansas Medical Center
+__ https://informatics.kumc.edu/work/wiki/REDCap
+'''
+import pandas as pd
 
 
 def get_files_to_export(export_dir):
@@ -33,7 +42,21 @@ def handle_files(eng_files, esp_files, export_dir):
 
 
 def combine_files(eng_file, esp_file):
-    import pandas as pd
+
+    '''
+    >>> from pathlib import Path
+    >>> from hashlib import md5
+
+    >>> eng_path = Path("testcases/eng/test.csv")
+    >>> esp_path = Path("testcases/esp/test.csv")
+
+    >>> combine_files(eng_path, esp_path)
+
+    >>> output_path = Path ("test.csv")
+    >>> md5(output_path.open().read()).hexdigest()
+    'bf4eebe4f4f1bae86e39a987f99f15fa'
+    '''
+
     export_location = r'{}'.format(eng_file.parent.parent.parent)
     eng = pd.read_csv(eng_file, low_memory=False)
     esp = pd.read_csv(esp_file, low_memory=False)
@@ -65,4 +88,3 @@ if __name__ == "__main__":
         main(argv, cwd)
 
     _script()
-
