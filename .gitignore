@@ -1,0 +1,8 @@
+# tageted for folders
+env*
+export*
+# targeted for files
+.vscode*
+*.pyc
+*.log
+.DS_Store
