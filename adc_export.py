@@ -55,7 +55,7 @@ def main(get_config,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
                                                 fields=field_names,
-                                                event_name='unique')
+                                                event_name='annual_forms_arm_1')
                 if data is None:
                     break
                 # remove the header of the CSV
