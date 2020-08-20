@@ -1,4 +1,4 @@
-'''data_export_api -- Export data from REDCap projects into CSV files
+r'''data_export_api -- Export data from REDCap projects into CSV files
 
 Usage:
    python data_export_api.py example.ini 11
@@ -7,11 +7,55 @@ Based on: pioneers/active_studies/study_refresh.py
 and http://pycap.readthedocs.org/en/latest/deep.html#working-with-files
 
 Boostrap project structure is based on DataExportBoostrap_DataDictionary.csv
+
+>>> form_info = [
+...     {'formname': 'demographics', 'fieldnames': 'age,height',
+...      'filename': ''},
+... ]
+
+For example, a demographics instrument might have data such as:
+
+>>> demographics = [
+...     {'id': 'p1', 'age': '32', 'height': '174'},
+...     {'id': 'p2', 'age': '33', 'height': '170'},
+... ]
+
+We configure API keys and such as follows:
+
+>>> files = {'/home/jenkins/conf.ini': u"""
+... [api]
+... api_url = https://redcap/api
+... verify_ssl = False
+...
+... [123]
+... bootstrap_token = bstok123
+... data_token = dtok123
+... file_dest = export
+... """}
+>>> io = MockIO('/home/jenkins', files, form_info, demographics)
+
+Then we use this script as follows:
+
+    >>> argv = 'adc_export conf.ini 123'.split()
+    >>> main(argv, io.cwd(), io.mkProject)
+
+And we get the relevant data exported to the requested files:
+
+    >>> for filename, contents in io._write.iteritems():
+    ...     print '==== ', filename
+    ...     print contents.replace('\r\n', '\n'),
+    ====  /home/jenkins/export/demographics.csv
+    age,id,height
+    32,p1,174
+    33,p2,170
+
 '''
 
 import configparser
 import logging
 from redcap import RedcapError
+
+from pathlib import PurePosixPath
 
 log = logging.getLogger(__name__)
 
@@ -107,6 +151,64 @@ def get_config(config, pid, cwd, mkProject):
     dest_dir = cwd / config.get(pid, 'file_dest')
 
     return pid, bs_proj, data_proj, dest_dir
+
+
+class MockIO(object):
+    def __init__(self, cwd, files, form_info, data):
+        self._cwd = cwd
+        self.mkProject = lambda *args, **kwargs: MockProject(form_info, data)
+        MockPath._write = self._write = {}
+        MockPath._read = files
+
+    def cwd(self):
+        return MockPath(self._cwd)
+
+
+class MockPath(PurePosixPath):
+    _write = {}
+    _read = {}
+
+    def open(self, mode='r'):
+        from io import BytesIO, StringIO
+        if mode == 'r':
+            return StringIO(self._read[str(self)])
+        else:
+            out = BytesIO()
+            saved = out.close
+
+            def close():
+                self._write[str(self)] = out.getvalue()
+                saved()
+            out.close = close
+            return out
+
+    def joinpath(self, other):
+        return MockIO(str(self / other))
+
+
+class MockProject(object):
+    def __init__(self, form_info, data):
+        self._form_info = form_info
+        self._data = data
+        self.def_field = 'id'
+
+    def export_records(self,
+                       format='json',
+                       forms=[], fields=[], records=[], event_name=''):
+        if 'form_selection' in forms:
+            return self._form_info
+        elif format == 'json':
+            return [{'id': rec['id'] for rec in self._data}]
+        elif format == 'csv':
+            from csv import DictWriter
+            from io import BytesIO
+            data = self._data
+            out = BytesIO()
+            dw = DictWriter(out, data[0].keys())
+            dw.writeheader()
+            dw.writerows(data)
+            serialized = out.getvalue()
+            return serialized
 
 
 if __name__ == '__main__':
