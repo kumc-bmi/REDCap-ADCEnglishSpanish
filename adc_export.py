@@ -16,104 +16,97 @@ from redcap import RedcapError
 log = logging.getLogger(__name__)
 
 
-def main(get_config,
-         bootstrap_form='form_selection',
-         # TODO: provide user with the ability to choose format
-         file_format='csv',
-         chunk_size=50):
-    # TODO: Allow users to provide multiple PIDs
-    pid, bs_proj, data_proj, open_dest = get_config()
+def main(argv, cwd, mkProject):
+    [config_fn, pid] = argv[1:3]
 
-    bs_data = bs_proj.export_records(format='json', forms=[bootstrap_form])
+    config = configparser.SafeConfigParser()
+    config.readfp((cwd / config_fn).open(), filename=config_fn)
 
+    pid, bs_proj, data_proj, dest_dir = get_config(config, pid, cwd, mkProject)
+
+    for form_name, file_name, field_names in form_selection(
+            bs_proj, pid, data_proj.def_field):
+        dest = (dest_dir / file_name).with_suffix('.csv')
+        export_form(data_proj, pid, form_name, field_names, dest)
+
+
+def form_selection(bs_proj, pid, def_field,
+                   bootstrap_form='form_selection'):
+    bootstrap_records = bs_proj.export_records(format='json',
+                                               forms=[bootstrap_form])
     log.info('Initiating export related to %s bootstrap records for pid:%s',
-             len(bs_data), pid)
+             len(bootstrap_records), pid)
 
-    for row in bs_data:
-        field_names = tuple(row['fieldnames'].split(','))
-        file_name = (row['formname']
-                     if row['filename'] is None or row['filename'] == ''
-                     else row['filename'])
-
+    for form_info in bootstrap_records:
         # Fix to include def_field in form exports (ref: #3426).
-        if field_names == ('',):
-            field_names = (data_proj.def_field,) + field_names
-
-        op_file = open_dest(file_name, file_format)
-
-        record_list = data_proj.export_records(fields=[data_proj.def_field])
-        records = list(set([str(r[data_proj.def_field]) for r in record_list]))
-        # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files # noqa
-        try:
-            log.info('Initiating export of data for pid:%s, form:%s ',
-                     pid, row['formname'])
-            header_written = False
-            log.info('Records: %s', records)
-            for record_chunk in chunks(records, chunk_size):
-                log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])
-                data = data_proj.export_records(records=record_chunk,
-                                                format=file_format,
-                                                forms=[row['formname'], ],
-                                                fields=field_names,
-                                                event_name='unique')
-                if data is None:
-                    break
-                # remove the header of the CSV
-                data = data.split('\n', 1)[1] if header_written else data
-                op_file.write(data.encode('utf-8'))
-                header_written = True
-            op_file.close()
-
-        except RedcapError:
-            msg = "Automatic REDCap API chunked export failed"
-            log.error('Chunked export failed for pid:%s, form:%s ',
-                      pid, row['formname'])
-            raise ValueError(msg)
-
+        if form_info['fieldnames'] == '':
+            field_names = [def_field]
         else:
-            log.info('Completed the export of data for pid:%s, form:%s ',
-                     pid, row['formname'])
+            field_names = form_info['fieldnames'].split(',')
+        form_name = form_info['formname']
+        file_name = form_info['filename'] or form_name
+        yield form_name, file_name, field_names
 
 
-def chunks(l, n):
+def export_form(data_proj, pid, form_name, field_names, dest):
+    log.info('Initiating export of data for pid:%s, form:%s ',
+             pid, form_name)
+    header_written = False
+    with dest.open('w') as op_file:
+        for data in csv_chunks(data_proj, pid, form_name, field_names):
+            if header_written:
+                data = data.split('\n', 1)[1]
+            else:
+                header_written = True
+            op_file.write(data.encode('utf-8'))
+
+    log.info('Completed the export of data for pid:%s, form:%s ',
+             pid, form_name)
+
+
+def csv_chunks(data_proj, pid, form_name, field_names,
+               chunk_size=50):
+    # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files # noqa
+    record_ids = data_proj.export_records(fields=[data_proj.def_field])
+    no_dups = list(set([r[data_proj.def_field] for r in record_ids]))
+    try:
+        log.info('Records: %s', no_dups)
+        for record_chunk in chunks(no_dups, chunk_size):
+            log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])
+            data = data_proj.export_records(records=record_chunk,
+                                            format='csv',
+                                            forms=[form_name],
+                                            fields=field_names,
+                                            event_name='unique')
+            if data:
+                yield data
+
+    except RedcapError:
+        log.error('Chunked export failed for pid:%s, form:%s ',
+                  pid, form_name)
+        raise
+
+
+def chunks(items, n):
     # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files
-    for i in xrange(0, len(l), n):
-        yield l[i:i + n]
+    for i in xrange(0, len(items), n):
+        yield items[i:i + n]
 
 
-def mk_get_config(os_path, openf, argv, Project):
-    '''Attenuate file, network access.
+def get_config(config, pid, cwd, mkProject):
+    api_url = config.get('api', 'api_url')
+    verify_ssl = config.getboolean('api', 'verify_ssl')
+    log.debug('API URL: %s', api_url)
 
-    get_config() provides only
-    - config files given as CLI arg 1
-    - pid from CLI arg 2
-      - access to REDCap projects specified by config and pid
-      - write access to `file_dest` option from this config and pid
-    '''
-    def get_config():
-        [config_fn, pid] = argv[1:3]
+    bs_token = config.get(pid, 'bootstrap_token')
+    log.debug('bootstrap token: %s...%s', bs_token[:4], bs_token[-4:])
+    bs_proj = mkProject(api_url, bs_token, verify_ssl=verify_ssl)
+    data_token = config.get(pid, 'data_token')
+    data_proj = mkProject(api_url, data_token, verify_ssl=verify_ssl)
 
-        config = configparser.SafeConfigParser()
-        config_fp = openf(config_fn)
-        config.readfp(config_fp, filename=config_fn)
+    dest_dir = cwd / config.get(pid, 'file_dest')
 
-        api_url = config.get('api', 'api_url')
-        verify_ssl = config.getboolean('api', 'verify_ssl')
-        log.debug('API URL: %s', api_url)
-
-        bs_token = config.get(pid, 'bootstrap_token')
-        log.debug('bootstrap token: %s...%s', bs_token[:4], bs_token[-4:])
-        bs_proj = Project(api_url, bs_token, verify_ssl=verify_ssl)
-        data_token = config.get(pid, 'data_token')
-        data_proj = Project(api_url, data_token, verify_ssl=verify_ssl)
-
-        def open_dest(file_name, file_format):
-            file_dest = config.get(pid, 'file_dest')
-            return openf(os_path.join(file_dest,
-                                      file_name + '.' + file_format), 'wb')
-
-        return pid, bs_proj, data_proj, open_dest
-    return get_config
+    return pid, bs_proj, data_proj, dest_dir
 
 
 if __name__ == '__main__':
@@ -127,14 +120,14 @@ if __name__ == '__main__':
             logging.basicConfig(filename=logfile, format=FORMAT,
                                 filemode='a', level=logging.INFO)
 
-    def _trusted_main():
+    def _script():
         from sys import argv
-        from os import path as os_path
-        from __builtin__ import open as openf
+        from pathlib import Path
         from redcap import Project
 
-        get_config = mk_get_config(os_path, openf, argv, Project)
-        main(get_config)
+        main(argv,
+             cwd=Path('.'),
+             mkProject=lambda *args: Project(*args))
 
     _set_logging()
-    _trusted_main()
+    _script()
