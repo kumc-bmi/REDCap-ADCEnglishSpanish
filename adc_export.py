@@ -10,14 +10,15 @@ Boostrap project structure is based on DataExportBoostrap_DataDictionary.csv
 
 >>> form_info = [
 ...     {'formname': 'demographics', 'fieldnames': 'age,height',
+...      'events': 'e1',
 ...      'filename': ''},
 ... ]
 
 For example, a demographics instrument might have data such as:
 
 >>> demographics = [
-...     {'id': 'p1', 'age': '32', 'height': '174'},
-...     {'id': 'p2', 'age': '33', 'height': '170'},
+...     [('age', 'e1', '32'), ('id', 'e1', 'p1'), ('height', 'e1', '174')],
+...     [('age', 'e2', '33'), ('id', 'e2', 'p2'), ('height', 'e2', '170')],
 ... ]
 
 We configure API keys and such as follows:
@@ -47,7 +48,6 @@ And we get the relevant data exported to the requested files:
     ====  /home/jenkins/export/demographics.csv
     age,id,height
     32,p1,174
-    33,p2,170
 
 '''
 
@@ -198,11 +198,16 @@ class MockProject(object):
         if 'form_selection' in forms:
             return self._form_info
         elif format == 'json':
-            return [{'id': rec['id'] for rec in self._data}]
+            data = [{field: value
+                    for (field, _event, value) in record }
+                    for record in self._data]
+            return [{'id': rec['id'] for rec in data}]
         elif format == 'csv':
             from csv import DictWriter
             from io import BytesIO
-            data = self._data
+            data = [{field: value
+                    for (field, _event, value) in record }
+                    for record in self._data]
             out = BytesIO()
             dw = DictWriter(out, data[0].keys())
             dw.writeheader()
