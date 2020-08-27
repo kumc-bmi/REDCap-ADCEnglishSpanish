@@ -9,7 +9,8 @@ and http://pycap.readthedocs.org/en/latest/deep.html#working-with-files
 Boostrap project structure is based on DataExportBoostrap_DataDictionary.csv
 
 >>> form_info = [
-...     {'formname': 'KU Informed Consent (ku_informed_consent)', 'filename': 'KUInformed_Consent', 'event_names': 'annual_forms_arm_1'},
+...     {'formname': 'KU Informed Consent (ku_informed_consent)', 'filename': 'KUInformed_Consent', 
+...     'event_names': 'annual_forms_arm_1'},
 ... ]
 
 For example, a demographics instrument might have data such as:
@@ -82,12 +83,12 @@ def form_selection(bs_proj, pid, def_field,
 
     for form_info in bootstrap_records:
         # Fix to include def_field in form exports (ref: #3426).
-        if form_info['field_names'] == '':
+        if form_info['fieldnames'] == '':
             field_names = [def_field]
         else:
-            field_names = form_info['field_names'].split(',')
-        form_name = form_info['form_name']
-        file_name = form_info['file_name'] or form_name
+            field_names = form_info['fieldnames'].split(',')
+        form_name = form_info['formname']
+        file_name = form_info['filename'] or form_name
         yield form_name, file_name, field_names
 
 
