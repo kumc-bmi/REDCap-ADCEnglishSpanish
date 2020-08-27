@@ -31,6 +31,7 @@ def main(get_config,
 
     for row in bs_data:
         field_names = tuple(row['fieldnames'].split(','))
+        event_names = tuple(row['event_names'].split(','))
         file_name = (row['formname']
                      if row['filename'] is None or row['filename'] == ''
                      else row['filename'])
@@ -55,7 +56,7 @@ def main(get_config,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
                                                 fields=field_names,
-                                                event_name='unique')
+                                                event_name=event_names)
                 if data is None:
                     break
                 # remove the header of the CSV
