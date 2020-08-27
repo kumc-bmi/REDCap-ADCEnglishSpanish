@@ -9,15 +9,13 @@ and http://pycap.readthedocs.org/en/latest/deep.html#working-with-files
 Boostrap project structure is based on DataExportBoostrap_DataDictionary.csv
 
 >>> form_info = [
-...     {'formname': 'demographics', 'fieldnames': 'age,height',
-...      'events': 'e1',
-...      'filename': ''},
+...     {'formname': 'KU Informed Consent (ku_informed_consent)', 'filename': 'KUInformed_Consent', 'event_names': 'annual_forms_arm_1'},
 ... ]
 
 For example, a demographics instrument might have data such as:
 
->>> demographics = [
-...     [('age', 'e1', '32'), ('id', 'e1', 'p1'), ('height', 'e1', '174')],
+>>> KU Informed Consent (ku_informed_consent) = [
+...     [('', 'e1', '32'), ('id', 'e1', 'p1'), ('height', 'e1', '174')],
 ...     [('age', 'e2', '33'), ('id', 'e2', 'p2'), ('height', 'e2', '170')],
 ... ]
 
@@ -48,6 +46,7 @@ And we get the relevant data exported to the requested files:
     ====  /home/jenkins/export/demographics.csv
     age,id,height
     32,p1,174
+    33,p2,170
 
 '''
 
@@ -83,12 +82,12 @@ def form_selection(bs_proj, pid, def_field,
 
     for form_info in bootstrap_records:
         # Fix to include def_field in form exports (ref: #3426).
-        if form_info['fieldnames'] == '':
+        if form_info['field_names'] == '':
             field_names = [def_field]
         else:
-            field_names = form_info['fieldnames'].split(',')
-        form_name = form_info['formname']
-        file_name = form_info['filename'] or form_name
+            field_names = form_info['field_names'].split(',')
+        form_name = form_info['form_name']
+        file_name = form_info['file_name'] or form_name
         yield form_name, file_name, field_names
 
 
@@ -199,14 +198,14 @@ class MockProject(object):
             return self._form_info
         elif format == 'json':
             data = [{field: value
-                    for (field, _event, value) in record }
+                    for (field, _event, value) in record}
                     for record in self._data]
             return [{'id': rec['id'] for rec in data}]
         elif format == 'csv':
             from csv import DictWriter
             from io import BytesIO
             data = [{field: value
-                    for (field, _event, value) in record }
+                    for (field, _event, value) in record}
                     for record in self._data]
             out = BytesIO()
             dw = DictWriter(out, data[0].keys())
