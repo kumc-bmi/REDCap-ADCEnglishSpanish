@@ -42,7 +42,7 @@ def main(get_config,
 
         op_file = open_dest(file_name, file_format)
 
-        record_list = data_proj.export_records(fields=[data_proj.def_field])
+        record_list = data_proj.export_records(events=[event_names])
         records = list(set([str(r[data_proj.def_field]) for r in record_list]))
         # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files # noqa
         try:
@@ -56,7 +56,7 @@ def main(get_config,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
                                                 fields=field_names,
-                                                event_name=event_names)
+                                                events=event_names)
                 if data is None:
                     break
                 # remove the header of the CSV
