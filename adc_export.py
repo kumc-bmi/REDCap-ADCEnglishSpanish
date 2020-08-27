@@ -234,7 +234,7 @@ if __name__ == '__main__':
 
         main(argv,
              cwd=Path('.'),
-             mkProject=lambda *args **kwargs: Project(*args))
+             mkProject=lambda *args, **kwargs: Project(*args))
 
     _set_logging()
     _script()
