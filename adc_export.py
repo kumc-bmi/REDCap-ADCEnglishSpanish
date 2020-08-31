@@ -31,10 +31,11 @@ def main(get_config,
 
     for row in bs_data:
         field_names = tuple(row['fieldnames'].split(','))
+        events_of_interest = list(row['event_names'].split(','))
+
         file_name = (row['formname']
                      if row['filename'] is None or row['filename'] == ''
                      else row['filename'])
-
         # Fix to include def_field in form exports (ref: #3426).
         if field_names == ('',):
             field_names = (data_proj.def_field,) + field_names
@@ -42,6 +43,7 @@ def main(get_config,
         op_file = open_dest(file_name, file_format)
 
         record_list = data_proj.export_records(fields=[data_proj.def_field])
+
         records = list(set([str(r[data_proj.def_field]) for r in record_list]))
         # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files # noqa
         try:
@@ -54,8 +56,7 @@ def main(get_config,
                 data = data_proj.export_records(records=record_chunk,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
-                                                fields=field_names,
-                                                event_name='unique')
+                                                events=events_of_interest)
                 if data is None:
                     break
                 # remove the header of the CSV
