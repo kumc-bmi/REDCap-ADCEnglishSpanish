@@ -57,7 +57,7 @@ def main(get_config,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
                                                 fields=field_names,
-                                                event_name=events_of_interest)
+                                                events=events_of_interest)
                 if data is None:
                     break
                 # remove the header of the CSV
