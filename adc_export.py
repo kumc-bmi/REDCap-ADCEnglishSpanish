@@ -42,7 +42,7 @@ def main(get_config,
 
         op_file = open_dest(file_name, file_format)
 
-        record_list = data_proj.export_records(arms=event_names)
+        record_list = data_proj.export_records(events=event_names)
 
         records = list(set([str(r[data_proj.def_field]) for r in record_list]))
         # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files # noqa
