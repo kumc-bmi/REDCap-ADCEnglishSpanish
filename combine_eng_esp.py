@@ -58,8 +58,9 @@ def combine_files(eng_file, esp_file):
     '''
 
     export_location = r'{}'.format(eng_file.parent.parent.parent)
-    eng = pd.read_csv(eng_file, low_memory=False,dtype=str)
-    esp = pd.read_csv(esp_file, low_memory=False,dtype=str)
+    export_location = r'{}'.format(esp_file.parent.parent.parent)
+    eng = pd.read_csv(eng_file, low_memory=False, dtype=str)
+    esp = pd.read_csv(esp_file, low_memory=False, dtype=str)
     merged = eng.append(esp, sort=True)
     merged_filename = '{}/{}'.format(export_location, eng_file.name)
     merged = merged[merged.columns]
