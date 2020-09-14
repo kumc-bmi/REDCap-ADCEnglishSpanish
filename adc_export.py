@@ -31,7 +31,7 @@ def main(get_config,
 
     for row in bs_data:
         field_names = tuple(row['fieldnames'].split(','))
-        events_of_interest = list(row['event_names'].split(','))
+        events_of_interest = tuple(row['event_names'].split(','))
 
         file_name = (row['formname']
                      if row['filename'] is None or row['filename'] == ''
