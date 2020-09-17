@@ -31,7 +31,7 @@ def main(get_config,
 
     for row in bs_data:
         field_names = tuple(row['fieldnames'].split(','))
-        events_of_interest = list(row['event_names'].split(','))
+        events_of_interest = tuple(row['event_names'].split(','))
 
         file_name = (row['formname']
                      if row['filename'] is None or row['filename'] == ''
@@ -44,7 +44,7 @@ def main(get_config,
 
         record_list = data_proj.export_records(fields=[data_proj.def_field])
 
-        records = str(set([str(r[data_proj.def_field]) for r in record_list]))
+        records = list(set([str(r[data_proj.def_field]) for r in record_list]))
         # From:http://pycap.readthedocs.org/en/latest/deep.html#working-with-files # noqa
         try:
             log.info('Initiating export of data for pid:%s, form:%s ',
