@@ -46,19 +46,19 @@ def handle_files(eng_files, esp_files, export_dir):
 
 def combine_files(eng_file, esp_file):
 
-    '''
-    >>> from pathlib import Path
-    >>> from hashlib import md5
+    # '''
+    # >>> from pathlib import Path
+    # >>> from hashlib import md5
 
-    >>> eng_path = Path("testcases/eng/test.csv")
-    >>> esp_path = Path("testcases/esp/test.csv")
+    # >>> eng_path = Path("testcases/eng/test.csv")
+    # >>> esp_path = Path("testcases/esp/test.csv")
 
-    >>> combine_files(eng_path, esp_path)
+    # >>> combine_files(eng_path, esp_path)
 
-    >>> output_path = Path ("test.csv")
-    >>> md5(output_path.open().read()).hexdigest()
-    'bf4eebe4f4f1bae86e39a987f99f15fa'
-    '''
+    # >>> output_path = Path ("test.csv")
+    # >>> md5(output_path.open().read()).hexdigest()
+    # 'bf4eebe4f4f1bae86e39a987f99f15fa'
+    # '''
 
     export_location = r'{}'.format(eng_file.parent.parent.parent)
     eng = pd.read_csv(eng_file, low_memory=False, dtype=str)
