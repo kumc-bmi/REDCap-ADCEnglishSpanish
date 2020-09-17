@@ -27,8 +27,11 @@ def handle_files(eng_files, esp_files, export_dir):
     for f in eng_files:
         for efile in esp_files:
             if f.name == efile.name:
-                combine_files(f, efile)
-                comb_files[str(f)] = str(f)
+                try:
+                    combine_files(f, efile)
+                    comb_files[str(f)] = str(f)
+                except Exception:
+                    continue
 
     print "Moving English Files"
     for f in eng_files:
@@ -59,7 +62,8 @@ def combine_files(eng_file, esp_file):
 
     export_location = r'{}'.format(eng_file.parent.parent.parent)
     eng = pd.read_csv(eng_file, low_memory=False, dtype=str)
-    esp = pd.read_csv(esp_file, low_memory=False, dtype=str)
+    esp = pd.read_csv(esp_file, low_memory=False, dtype=str) 
+    print("empty table")
     merged = eng.append(esp, sort=True)
     merged_filename = '{}/{}'.format(export_location, eng_file.name)
     merged = merged[merged.columns]
