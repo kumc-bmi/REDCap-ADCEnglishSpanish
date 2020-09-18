@@ -31,6 +31,7 @@ def handle_files(eng_files, esp_files, export_dir):
                     combine_files(f, efile)
                     comb_files[str(f)] = str(f)
                 except Exception:
+                    print(efile.name + " is empty")
                     continue
 
     print "Moving English Files"
