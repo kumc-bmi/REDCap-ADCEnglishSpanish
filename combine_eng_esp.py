@@ -8,7 +8,7 @@ export/temp/Spanish will have Spanish ADC export
 __ https://informatics.kumc.edu/work/wiki/REDCap
 '''
 import pandas as pd
-
+import ftfy
 
 def get_files_to_export(export_dir):
     files = []
@@ -41,6 +41,12 @@ def handle_files(eng_files, esp_files, export_dir):
             copy(str(f), str(export_dir.parent))
 
 
+def sanitize_value(x):
+    y = ftfy.fix_text(x).encode('ascii', 'replace')
+    z = y.decode('utf-8')
+	return z
+
+
 def combine_files(eng_file, esp_file):
 
     '''
@@ -60,6 +66,12 @@ def combine_files(eng_file, esp_file):
     export_location = r'{}'.format(eng_file.parent.parent.parent)
     eng = pd.read_csv(eng_file, low_memory=False,dtype=str)
     esp = pd.read_csv(esp_file, low_memory=False,dtype=str)
+    eng_column_list = list(eng)
+    esp_column_list = list(esp)
+    for i in eng_column_list:
+        eng[i] = eng[i].apply(sanitize_value)
+    for i in esp_column_list:
+        esp[i] = esp[i].apply(sanitize_value)
     merged = eng.append(esp, sort=True)
     merged_filename = '{}/{}'.format(export_location, eng_file.name)
     merged = merged[merged.columns]
