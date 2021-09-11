@@ -41,9 +41,10 @@ def handle_files(eng_files, esp_files, export_dir):
             copy(str(f), str(export_dir.parent))
 
 
-def sanitize_value(x):
-    y = ftfy.fix_text(x).encode('ascii', 'replace')
-    z = y.decode('utf-8')
+def sanitize_value(w):
+    x = w.encode('ascii', 'replace')
+    y = x.decode('utf-8')
+    z = ftfy.fix_text(y)
     return z
 
 
