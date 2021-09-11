@@ -8,7 +8,6 @@ export/temp/Spanish will have Spanish ADC export
 __ https://informatics.kumc.edu/work/wiki/REDCap
 '''
 import pandas as pd
-import sys
 
 def get_files_to_export(export_dir):
     files = []
@@ -42,10 +41,9 @@ def handle_files(eng_files, esp_files, export_dir):
 
 
 def sanitize_value(w):
-    reload(sys)
-    sys.setdefaultencoding("utf-8")
-    x = str(w).encode('ascii', 'replace')
-    return x
+    x = str(w).decode('unicode_escape').encode('ascii','replace')
+    y = x.decode('utf-8')
+    return y
 
 
 def combine_files(eng_file, esp_file):
