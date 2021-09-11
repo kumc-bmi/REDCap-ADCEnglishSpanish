@@ -8,7 +8,6 @@ export/temp/Spanish will have Spanish ADC export
 __ https://informatics.kumc.edu/work/wiki/REDCap
 '''
 import pandas as pd
-import ftfy
 
 def get_files_to_export(export_dir):
     files = []
@@ -44,8 +43,7 @@ def handle_files(eng_files, esp_files, export_dir):
 def sanitize_value(w):
     x = str(w).encode('ascii', 'replace')
     y = str(x).decode('utf-8')
-    z = ftfy.fix_text(str(y))
-    return z
+    return y
 
 
 def combine_files(eng_file, esp_file):
