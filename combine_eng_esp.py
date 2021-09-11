@@ -44,7 +44,7 @@ def handle_files(eng_files, esp_files, export_dir):
 def sanitize_value(x):
     y = ftfy.fix_text(x).encode('ascii', 'replace')
     z = y.decode('utf-8')
-	return z
+    return z
 
 
 def combine_files(eng_file, esp_file):
