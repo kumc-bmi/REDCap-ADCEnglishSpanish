@@ -43,7 +43,24 @@ def handle_files(eng_files, esp_files, export_dir):
 def sanitize_value(w):
     x = str(w).decode('unicode_escape').encode('ascii','replace')
     y = x.decode('utf-8')
-    return y
+    z = []
+    l = len(y)
+    char = '?'
+      
+    for i in range(len(y)):
+        if (y[i] == char and i != (l-1) and
+           i != 0 and y[i + 1] != char and y[i-1] != char):
+            z.append(y[i])
+              
+        elif y[i] == char:
+            if ((i != (l-1) and y[i + 1] == char) and
+               (i != 0 and y[i-1] != char)):
+                z.append(y[i])
+                  
+        else:
+            z.append(y[i])
+          
+    return ("".join(i for i in z))
 
 
 def combine_files(eng_file, esp_file):
