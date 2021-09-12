@@ -80,8 +80,8 @@ def combine_files(eng_file, esp_file):
     '''
 
     export_location = r'{}'.format(eng_file.parent.parent.parent)
-    eng = pd.read_csv(eng_file, low_memory=False,dtype=str)
-    esp = pd.read_csv(esp_file, low_memory=False,dtype=str)
+    eng = pd.read_csv(eng_file, low_memory=False,dtype=str, keep_default_na=False)
+    esp = pd.read_csv(esp_file, low_memory=False,dtype=str, keep_default_na=False)
     eng_column_list = list(eng)
     esp_column_list = list(esp)
     for i in eng_column_list:
