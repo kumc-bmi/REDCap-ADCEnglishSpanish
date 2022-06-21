@@ -2,7 +2,7 @@ certifi==2018.11.29
 chardet==3.0.4
 configparser==3.7.3
 idna==2.8
-numpy==1.16.2
+numpy==1.22.0
 pandas==0.24.2
 pathlib==1.0.1
 PyCap==1.0.2
