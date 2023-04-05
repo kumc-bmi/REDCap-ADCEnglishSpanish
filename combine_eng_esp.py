@@ -9,7 +9,6 @@ __ https://informatics.kumc.edu/work/wiki/REDCap
 '''
 import pandas as pd
 
-
 def get_files_to_export(export_dir):
     files = []
     for f in export_dir.iterdir():
@@ -41,6 +40,29 @@ def handle_files(eng_files, esp_files, export_dir):
             copy(str(f), str(export_dir.parent))
 
 
+def sanitize_value(w):
+    x = str(w).decode('unicode_escape').encode('ascii','replace')
+    y = x.decode('utf-8')
+    z = []
+    l = len(y)
+    char = '?'
+      
+    for i in range(len(y)):
+        if (y[i] == char and i != (l-1) and
+           i != 0 and y[i + 1] != char and y[i-1] != char):
+            z.append(y[i])
+              
+        elif y[i] == char:
+            if ((i != (l-1) and y[i + 1] == char) and
+               (i != 0 and y[i-1] != char)):
+                z.append(y[i])
+                  
+        else:
+            z.append(y[i])
+          
+    return ("".join(i for i in z))
+
+
 def combine_files(eng_file, esp_file):
 
     '''
@@ -58,8 +80,14 @@ def combine_files(eng_file, esp_file):
     '''
 
     export_location = r'{}'.format(eng_file.parent.parent.parent)
-    eng = pd.read_csv(eng_file, low_memory=False,dtype=str)
-    esp = pd.read_csv(esp_file, low_memory=False,dtype=str)
+    eng = pd.read_csv(eng_file, low_memory=False,dtype=str, keep_default_na=False)
+    esp = pd.read_csv(esp_file, low_memory=False,dtype=str, keep_default_na=False)
+    eng_column_list = list(eng)
+    esp_column_list = list(esp)
+    for i in eng_column_list:
+        eng[i] = eng[i].apply(sanitize_value)
+    for i in esp_column_list:
+        esp[i] = esp[i].apply(sanitize_value)
     merged = eng.append(esp, sort=True)
     merged_filename = '{}/{}'.format(export_location, eng_file.name)
     merged = merged[merged.columns]
