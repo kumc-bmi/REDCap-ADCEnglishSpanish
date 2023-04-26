@@ -59,6 +59,8 @@ def main(get_config,
                 if data is None:
                     break
                 # remove the header of the CSV
+                log.info('data is: %s, form:%s ',
+                     data)
                 data = data.split('\n', 1)[1] if header_written else data
                 op_file.write(data.encode('utf-8'))
                 header_written = True
