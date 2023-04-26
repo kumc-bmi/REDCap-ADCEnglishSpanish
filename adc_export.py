@@ -52,9 +52,16 @@ def main(get_config,
             log.info('Records: %s', records)
             for record_chunk in chunks(records, chunk_size):
                 log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])
-                data = data_proj.export_records(records=record_chunk,
+                if (field_names == ''):
+                    data = data_proj.export_records(records=record_chunk,
+                                                    format=file_format,
+                                                    forms=[row['formname'], ],
+                                                    event_name='unique')
+                else:
+                    data = data_proj.export_records(records=record_chunk,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
+                                                fields=field_names,
                                                 event_name='unique')
                 #print(data)
                 if data is None:
