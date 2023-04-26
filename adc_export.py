@@ -50,7 +50,7 @@ def main(get_config,
             header_written = False
             log.info('Records: %s', records)
             for record_chunk in chunks(records, chunk_size):
-                log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])  
+                log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])
                 data = data_proj.export_records(records=record_chunk,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
