@@ -57,12 +57,7 @@ def main(get_config,
                                                     format=file_format,
                                                     forms=[row['formname'], ],
                                                     event_name='unique')
-                else:
-                    data = data_proj.export_records(records=record_chunk,
-                                                format=file_format,
-                                                forms=[row['formname'], ],
-                                                fields=field_names,
-                                                event_name='unique')
+
                 #print(data)
                 if data is None:
                     break
