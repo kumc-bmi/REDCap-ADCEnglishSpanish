@@ -56,7 +56,7 @@ def main(get_config,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
                                                 event_name='unique')
-                print(data)
+                #print(data)
                 if data is None:
                     break
                 # remove the header of the CSV
