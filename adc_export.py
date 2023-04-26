@@ -39,6 +39,7 @@ def main(get_config,
         if field_names == ('',):
             field_names = (data_proj.def_field,) + field_names
 
+        print(field_names)
         op_file = open_dest(file_name, file_format)
 
         record_list = data_proj.export_records(fields=[data_proj.def_field])
