@@ -39,7 +39,6 @@ def main(get_config,
         if field_names == ('',):
             field_names = (data_proj.def_field,) + field_names
 
-        print(field_names)
         op_file = open_dest(file_name, file_format)
 
         record_list = data_proj.export_records(fields=[data_proj.def_field])
@@ -51,13 +50,11 @@ def main(get_config,
             header_written = False
             log.info('Records: %s', records)
             for record_chunk in chunks(records, chunk_size):
-                log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])
-
+                log.info('Chunk: %s to %s', record_chunk[0], record_chunk[-1])  
                 data = data_proj.export_records(records=record_chunk,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
                                                 event_name='unique')
-                #print(data)
                 if data is None:
                     break
                 # remove the header of the CSV
