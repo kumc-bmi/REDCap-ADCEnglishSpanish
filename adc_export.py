@@ -59,6 +59,8 @@ def main(get_config,
                                                 events=events_of_interest)
                 if data is None:
                     break
+                if len(data.encode('utf-8')) == 0:
+                    break
                 # remove the header of the CSV
                 data = data.split('\n', 1)[1] if header_written else data
                 op_file.write(data.encode('utf-8'))
