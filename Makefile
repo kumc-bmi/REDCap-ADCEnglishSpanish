@@ -1,4 +1,3 @@
-config_file=/Users/lpatel/Documents/ADC_english_spanish/config.ini 
 run:
 	mkdir -p export/temp/English &&\
 	mkdir -p export/temp/Spanish &&\
