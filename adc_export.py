@@ -61,13 +61,14 @@ def main(get_config,
                 data = data_proj.export_records(records=record_chunk,
                                                 format=file_format,
                                                 forms=[row['formname'], ],
-                                                #events=events_of_interest
+                                                events=events_of_interest
                                                 )
                 if data is None:
                     break
-                # if len(data.encode('utf-8')) == 0:
-                #     log.info('data: %s', data)
-                #     break
+                if len(data.encode('utf-8')) == 0:
+                    log.info('data: %s', data)
+                    continue
+
                 # remove the header of the CSV
                 data = data.split('\n', 1)[1] if header_written else data
                 op_file.write(data.encode('utf-8'))
