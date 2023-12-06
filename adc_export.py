@@ -40,6 +40,9 @@ def main(get_config,
         if field_names == ('',):
             field_names = (data_proj.def_field,) + field_names
 
+        log.info("events_of_interest: %s", events_of_interest)
+        log.info('Exporting data for pid:%s, filename:%s', pid, file_name)
+
         op_file = open_dest(file_name, file_format)
 
         record_list = data_proj.export_records(fields=[data_proj.def_field])
@@ -60,7 +63,8 @@ def main(get_config,
                 if data is None:
                     break
                 if len(data.encode('utf-8')) == 0:
-                    break
+                    log.info('data: %s', data)
+                    continue
                 # remove the header of the CSV
                 data = data.split('\n', 1)[1] if header_written else data
                 op_file.write(data.encode('utf-8'))
